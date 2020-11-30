@@ -15,8 +15,9 @@ class K50Client(object):
         self._session = Session()
         self._session.headers['apiKey'] = self.access_token
 
-    def _send_api_request(self, http_method: str, url: str, params: Optional[dict] = None,
-                          csv=False) -> Union[dict, str]:
+    def _send_api_request(
+        self, http_method: str, url: str, params: Optional[dict] = None, csv=False
+    ) -> Union[dict, str]:
         response = self._session.__getattribute__(http_method)(url, json=params)
         if response.status_code > 204:
             raise K50APIException(response.json()['error'])
@@ -30,7 +31,9 @@ class K50Client(object):
         url = 'https://api.tracker.k50.ru/api/me'
         return self._send_api_request('get', url=url)
 
-    def get_pool_list(self, counter: int, page: int = 1, items_per_page: int = 1000) -> dict:
+    def get_pool_list(
+        self, counter: int, page: int = 1, items_per_page: int = 1000
+    ) -> dict:
         """
         doc - https://help.k50.ru/tracker-api/api-requests/get-pool/
         :param counter: int (counter for project)
@@ -42,8 +45,15 @@ class K50Client(object):
         url = f'{self.API_URL}/pool/list/?{urlencode(params)}'
         return self._send_api_request('get', url)
 
-    def get_call_stats(self, counter: int, dimensions: list, filter_: Optional[str] = None,
-                       page: int = 1, items_per_page: int = 1000, csv: bool = False) -> Union[dict, str]:
+    def get_call_stats(
+        self,
+        counter: int,
+        dimensions: list,
+        filter_: Optional[str] = None,
+        page: int = 1,
+        items_per_page: int = 1000,
+        csv: bool = False,
+    ) -> Union[dict, str]:
         """
         doc - https://help.k50.ru/tracker-api/api-requests/get-calls-stat-v2/
         :param counter: counter: int (counter for project)
@@ -54,10 +64,20 @@ class K50Client(object):
         :param csv: bool default False
         :return: dict
         """
-        return self._get_stats('call', counter, dimensions, filter_, page, items_per_page, csv)
+        return self._get_stats(
+            'call', counter, dimensions, filter_, page, items_per_page, csv
+        )
 
-    def _get_stats(self, entity: str, counter: int, dimensions: list, filter_: Optional[str] = None,
-                   page: int = 1, items_per_page: int = 1000, csv: bool = False) -> Union[dict, str]:
+    def _get_stats(
+        self,
+        entity: str,
+        counter: int,
+        dimensions: list,
+        filter_: Optional[str] = None,
+        page: int = 1,
+        items_per_page: int = 1000,
+        csv: bool = False,
+    ) -> Union[dict, str]:
         """
         :param entity: counter: str
         :param counter: counter: int (counter for project)
@@ -68,14 +88,31 @@ class K50Client(object):
         :param csv: bool default False
         :return: dict
         """
-        params = {'counter': counter, 'dimensions': dimensions, 'page': page, 'itemsPerPage': items_per_page}
+        dimension_data = {f'dimension[{i}]': data for i, data in enumerate(dimensions)}
+        params = {
+            'counter': counter,
+            'page': page,
+            'itemsPerPage': items_per_page,
+            **dimension_data,
+        }
         if filter_:
             params['filter'] = filter_
-        url = f'{self.API_URL}/{entity}/list/' if not csv else f'{self.API_URL}/{entity}/list/csv'
+        url = (
+            f'{self.API_URL}/{entity}/list/'
+            if not csv
+            else f'{self.API_URL}/{entity}/list/csv'
+        )
         return self._send_api_request('post', url, params=params, csv=csv)
 
-    def get_order_stats(self, counter: int, dimensions: list, filter_: Optional[str] = None,
-                        page: int = 1, items_per_page: int = 1000, csv: bool = False) -> Union[dict, str]:
+    def get_order_stats(
+        self,
+        counter: int,
+        dimensions: list,
+        filter_: Optional[str] = None,
+        page: int = 1,
+        items_per_page: int = 1000,
+        csv: bool = False,
+    ) -> Union[dict, str]:
         """
         doc - https://help.k50.ru/tracker-api/api-requests/get-orders-stat-v2/
         :param counter: counter: int (counter for project)
@@ -86,9 +123,13 @@ class K50Client(object):
         :param csv: bool default False
         :return: dict
         """
-        return self._get_stats('order', counter, dimensions, filter_, page, items_per_page, csv)
+        return self._get_stats(
+            'order', counter, dimensions, filter_, page, items_per_page, csv
+        )
 
-    def get_tags(self, counter: int, page: int = 1, items_per_page: int = 1000, csv: bool = False) -> Union[dict, str]:
+    def get_tags(
+        self, counter: int, page: int = 1, items_per_page: int = 1000, csv: bool = False
+    ) -> Union[dict, str]:
         """
         doc -https://help.k50.ru/tracker-api/api-requests/get-tags/
         :param counter: counter: int (counter for project)
@@ -98,13 +139,23 @@ class K50Client(object):
         :return: dict
         """
         params = {'counter': counter, 'page': page, 'itemsPerPage': items_per_page}
-        url = f'{self.API_URL}/tag/list/?{urlencode(params)}' if not csv else f'{self.API_URL}/tag/list/csv' \
-                                                                              f'?{urlencode(params)}'
+        url = (
+            f'{self.API_URL}/tag/list/?{urlencode(params)}'
+            if not csv
+            else f'{self.API_URL}/tag/list/csv' f'?{urlencode(params)}'
+        )
         return self._send_api_request('get', url, csv=csv)
 
-    def get_leads(self, counter: int, dimensions: list, is_show_inter_action_chain: bool = False,
-                  filter_: Optional[str] = None, page: int = 1, items_per_page: int = 10000,
-                  csv: bool = False) -> Union[dict, str]:
+    def get_leads(
+        self,
+        counter: int,
+        dimensions: list,
+        is_show_inter_action_chain: bool = False,
+        filter_: Optional[str] = None,
+        page: int = 1,
+        items_per_page: int = 10000,
+        csv: bool = False,
+    ) -> Union[dict, str]:
         """
         doc - https://help.k50.ru/tracker-api/api-requests/get-leads/
         :param counter: int
@@ -116,17 +167,35 @@ class K50Client(object):
         :param csv: bool
         :return:
         """
-        params = {'counter': counter, 'dimensions': dimensions, 'page': page, 'itemsPerPage': items_per_page}
+        params = {
+            'counter': counter,
+            'dimensions': dimensions,
+            'page': page,
+            'itemsPerPage': items_per_page,
+        }
         if is_show_inter_action_chain:
             params['isShowInterActionChain'] = is_show_inter_action_chain
         if filter_:
             params['filter'] = filter_
-        url = f'{self.API_URL}/leads/list/' if not csv else f'{self.API_URL}/leads/list/csv'
+        url = (
+            f'{self.API_URL}/leads/list/'
+            if not csv
+            else f'{self.API_URL}/leads/list/csv'
+        )
         return self._send_api_request('post', url, params=params, csv=csv)
 
-    def get_reports(self, counter: int, dimensions: list, metrics: list, date_from: datetime,
-                    date_to: datetime, limit: int = 1000, offset: int = 1000, order_by: Optional[dict] = None,
-                    csv: bool = False) -> Union[dict, str]:
+    def get_reports(
+        self,
+        counter: int,
+        dimensions: list,
+        metrics: list,
+        date_from: datetime,
+        date_to: datetime,
+        limit: int = 1000,
+        offset: int = 1000,
+        order_by: Optional[dict] = None,
+        csv: bool = False,
+    ) -> Union[dict, str]:
         """
         doc - https://help.k50.ru/tracker-api/api-requests/get-reports/
         :param counter: int
@@ -140,9 +209,14 @@ class K50Client(object):
         :param csv: bool
         :return: Union(dict or string)
         """
-        endpoint_url = f'https://api.tracker.k50.ru/api/counter/reports?' if not csv else \
-            f'https://api.tracker.k50.ru/api/counter/reports/csv?'
-        default_params = urlencode({'counterId': counter, 'limit': limit, 'offset': offset})
+        endpoint_url = (
+            f'https://api.tracker.k50.ru/api/counter/reports?'
+            if not csv
+            else f'https://api.tracker.k50.ru/api/counter/reports/csv?'
+        )
+        default_params = urlencode(
+            {'counterId': counter, 'limit': limit, 'offset': offset}
+        )
         dimensions_param = generate_list_get_param('dimensions', dimensions)
         metrics_param = generate_list_get_param('metrics', metrics)
         period = f'&period[from]={date_from}&period[to]={date_to}'
@@ -150,12 +224,20 @@ class K50Client(object):
         if order_by:
             order_by_param = ''
             for k, v in order_by.items():
-                order_by_param += f'&orderBy[{key}]={v}'
+                order_by_param += f'&orderBy[{k}]={v}'
             endpoint_url += order_by_param
         return self._send_api_request('get', endpoint_url, csv=csv)
 
-    def _add_or_update_call(self, method: str, counter: int, call_id: str, start_time: datetime, caller_phone: str,
-                            called_phone: str, **kwargs) -> dict:
+    def _add_or_update_call(
+        self,
+        method: str,
+        counter: int,
+        call_id: str,
+        start_time: datetime,
+        caller_phone: str,
+        called_phone: str,
+        **kwargs,
+    ) -> dict:
         params = {
             'counter': counter,
             'callId': call_id,
@@ -169,8 +251,15 @@ class K50Client(object):
         url = f'{self.API_URL}/call/{method}/'
         return self._send_api_request('post', url, params=params)
 
-    def add_call(self, counter: int, call_id: str, start_time: datetime, caller_phone: str, called_phone: str,
-                 **kwargs) -> dict:
+    def add_call(
+        self,
+        counter: int,
+        call_id: str,
+        start_time: datetime,
+        caller_phone: str,
+        called_phone: str,
+        **kwargs,
+    ) -> dict:
         """
         doc - https://help.k50.ru/tracker-api/api-requests/add-calls/
         :param counter: int
@@ -181,10 +270,19 @@ class K50Client(object):
         :param kwargs: dict
         :return: dict
         """
-        return self._add_or_update_call('add', counter, call_id, start_time, caller_phone, called_phone, **kwargs)
+        return self._add_or_update_call(
+            'add', counter, call_id, start_time, caller_phone, called_phone, **kwargs
+        )
 
-    def update_call(self, counter: int, call_id: str, start_time: datetime, caller_phone: str, called_phone: str,
-                    **kwargs) -> dict:
+    def update_call(
+        self,
+        counter: int,
+        call_id: str,
+        start_time: datetime,
+        caller_phone: str,
+        called_phone: str,
+        **kwargs,
+    ) -> dict:
         """
         doc - https://help.k50.ru/tracker-api/api-requests/update-calls/
         :param counter: int
@@ -195,14 +293,26 @@ class K50Client(object):
         :param kwargs: dict
         :return: dict
         """
-        return self._add_or_update_call('update', counter, call_id, start_time, caller_phone, called_phone, **kwargs)
+        return self._add_or_update_call(
+            'update', counter, call_id, start_time, caller_phone, called_phone, **kwargs
+        )
 
-    def _add_or_update_order(self, method: str, counter: int, order_id: str, date_time: datetime,
-                             sid: Optional[str] = None, uuid_: Optional[str] = None,
-                             caller_phone: Optional[str] = None, margin: Optional[float] = None,
-                             revenue: Optional[float] = None, contact_person: Optional[dict] = None,
-                             email: Optional[str] = None, comment: Optional[str] = None,
-                             tags: Optional[list] = None) -> dict:
+    def _add_or_update_order(
+        self,
+        method: str,
+        counter: int,
+        order_id: str,
+        date_time: datetime,
+        sid: Optional[str] = None,
+        uuid_: Optional[str] = None,
+        caller_phone: Optional[str] = None,
+        margin: Optional[float] = None,
+        revenue: Optional[float] = None,
+        contact_person: Optional[dict] = None,
+        email: Optional[str] = None,
+        comment: Optional[str] = None,
+        tags: Optional[list] = None,
+    ) -> dict:
         """
         :param method: str
         :param counter: int
@@ -245,12 +355,21 @@ class K50Client(object):
         url = f'{self.API_URL}/order/{method}/'
         return self._send_api_request('post', url, params=params)
 
-    def add_order(self, counter: int, order_id: str, date_time: datetime,
-                  sid: Optional[str] = None, uuid_: Optional[str] = None,
-                  caller_phone: Optional[str] = None, margin: Optional[float] = None,
-                  revenue: Optional[float] = None, contact_person: Optional[dict] = None,
-                  email: Optional[str] = None, comment: Optional[str] = None,
-                  tags: Optional[list] = None) -> dict:
+    def add_order(
+        self,
+        counter: int,
+        order_id: str,
+        date_time: datetime,
+        sid: Optional[str] = None,
+        uuid_: Optional[str] = None,
+        caller_phone: Optional[str] = None,
+        margin: Optional[float] = None,
+        revenue: Optional[float] = None,
+        contact_person: Optional[dict] = None,
+        email: Optional[str] = None,
+        comment: Optional[str] = None,
+        tags: Optional[list] = None,
+    ) -> dict:
         """
         doc - https://help.k50.ru/tracker-api/api-requests/add-orders-stat-v2/
         :param counter: int
@@ -269,12 +388,21 @@ class K50Client(object):
         """
         return self._add_or_update_order('add', **locals())
 
-    def update_order(self, counter: int, order_id: str, date_time: datetime,
-                     sid: Optional[str] = None, uuid_: Optional[str] = None,
-                     caller_phone: Optional[str] = None, margin: Optional[float] = None,
-                     revenue: Optional[float] = None, contact_person: Optional[dict] = None,
-                     email: Optional[str] = None, comment: Optional[str] = None,
-                     tags: Optional[list] = None) -> dict:
+    def update_order(
+        self,
+        counter: int,
+        order_id: str,
+        date_time: datetime,
+        sid: Optional[str] = None,
+        uuid_: Optional[str] = None,
+        caller_phone: Optional[str] = None,
+        margin: Optional[float] = None,
+        revenue: Optional[float] = None,
+        contact_person: Optional[dict] = None,
+        email: Optional[str] = None,
+        comment: Optional[str] = None,
+        tags: Optional[list] = None,
+    ) -> dict:
         """
         doc - https://help.k50.ru/tracker-api/api-requests/update-orders-stat-v2/
         :param counter: int
@@ -293,7 +421,9 @@ class K50Client(object):
         """
         return self._add_or_update_order('update', **locals())
 
-    def _add_or_remove_tags_to_calls(self, operation: str, counter: int, call_ids: list, tags: list) -> dict:
+    def _add_or_remove_tags_to_calls(
+        self, operation: str, counter: int, call_ids: list, tags: list
+    ) -> dict:
         """
         :param operation: str
         :param counter: int
